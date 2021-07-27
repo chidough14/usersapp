@@ -2,38 +2,59 @@
 import './App.css'; */
 import { Table, Space, Button, Modal, Input } from 'antd'
 import { useState } from 'react';
+import { v1 as uuidv1 } from 'uuid';
 
-const columns = [
-  {
-    title: 'Name',
-    dataIndex: 'name',
-    key: 'name',
-    render: text => <a>{text}</a>,
-  },
-  
-  {
-    title: 'Action',
-    key: 'action',
-    render: (text, record) => (
-      <Space size="middle">
-        <Button type="primary">Edit</Button>
-        <Button type="default">Delete</Button>
-      </Space>
-    ),
-  },
-];
+
 
 
 function App() {
   const [data, setData] = useState([])
   const [isModalVisible, setIsModalVisible] = useState(false)
+  const [editIsModalVisible, setEditIsModalVisible] = useState(false)
   const [user, setUser] = useState({
+    id: "",
     name: ""
   })
+  const [editData, setEditData] = useState({
+    id: "",
+    name: ""
+  })
+
+  const columns = [
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+      render: text => <p>{text}</p>,
+    },
+    
+    {
+      title: 'Action',
+      key: 'action',
+      render: (text, record) => (
+        <Space size="middle">
+          <Button type="primary" onClick={()=> showEditModal(text, record)}>Edit</Button>
+          <Button type="default" onClick={()=> deleteRecord(text, record)}>Delete</Button>
+        </Space>
+      ),
+    },
+  ];
+
+  const showEditModal = (text, record) => {
+    setIsModalVisible(true)
+    setEditIsModalVisible(true)
+    setEditData({id: record.id, name: record.name})
+  }
+
+  const deleteRecord = (text, record) => {
+    setData(data.filter(item => item.id !== record.id))
+  }
 
   const showModal = () => {
     setIsModalVisible(true)
   }
+
+  
 
   const handleOk = () => {
     setData([...data, user])
@@ -41,8 +62,22 @@ function App() {
     setUser({name: ""})
   }
 
+  const handleEdit = (id) => {
+    setEditIsModalVisible(false)
+    setIsModalVisible(false)
+    console.log(editData)
+
+    setData(
+        data.map(item => 
+            item.id === id
+            ? {...item, name : editData.name} 
+            : item 
+    ))
+  }
+
   const handleCancel = () => {
     setIsModalVisible(false)
+    setEditIsModalVisible(false)
     setUser({name: ""})
   }
 
@@ -53,8 +88,16 @@ function App() {
         <Table columns={columns} dataSource={data} />
       </div>
 
-      <Modal title="Basic Modal" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
-        <Input onChange={(e)=> setUser({name: e.target.value})} value={user.name} />
+      <Modal 
+        title={editIsModalVisible ? "Edit User" : "Add User"} visible={isModalVisible} 
+        onOk={editIsModalVisible ? ()=>handleEdit(editData.id) : handleOk} 
+        onCancel={handleCancel}
+        okButtonProps={user.name === "" && !editIsModalVisible ? {disabled: true} : {disabled: false}}
+      >
+        <Input 
+          onChange={editIsModalVisible ? (e)=> setEditData({id: editData.id, name: e.target.value}) : (e)=> setUser({id: uuidv1(), name: e.target.value})} 
+          value={editIsModalVisible ? editData.name : user.name} 
+        />
       </Modal>
     </div>
   );
