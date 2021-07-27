@@ -11,6 +11,8 @@ function App() {
   const [data, setData] = useState([])
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [editIsModalVisible, setEditIsModalVisible] = useState(false)
+  const [userIsModalVisible, setUserIsModalVisible] = useState(false)
+  const [userModalText, setUserModalText] = useState("")
   const [user, setUser] = useState({
     id: "",
     name: ""
@@ -25,7 +27,7 @@ function App() {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
-      render: text => <p>{text}</p>,
+      render: text => <p onClick={()=> showUserModal(text)} style={{cursor: "pointer"}}>{text}</p>,
     },
     
     {
@@ -54,7 +56,11 @@ function App() {
     setIsModalVisible(true)
   }
 
-  
+  const showUserModal = (text) => {
+    setUserIsModalVisible(true)
+    setIsModalVisible(true)
+    setUserModalText(text)
+  }
 
   const handleOk = () => {
     setData([...data, user])
@@ -89,15 +95,25 @@ function App() {
       </div>
 
       <Modal 
-        title={editIsModalVisible ? "Edit User" : "Add User"} visible={isModalVisible} 
-        onOk={editIsModalVisible ? ()=>handleEdit(editData.id) : handleOk} 
-        onCancel={handleCancel}
-        okButtonProps={user.name === "" && !editIsModalVisible ? {disabled: true} : {disabled: false}}
+        title={editIsModalVisible ? "Edit User" : userIsModalVisible ? "User Details" : "Add User"} visible={isModalVisible}
+        closable={false}
+        footer={[
+          <Button key="cancel"   onClick={handleCancel} hidden={userIsModalVisible ? true : false}>
+            Cancel
+          </Button>,
+          <Button key="ok" type="primary" onClick={editIsModalVisible ? ()=>handleEdit(editData.id) : userIsModalVisible ? ()=> {setIsModalVisible(false); setUserIsModalVisible(false)} : handleOk} disabled={user.name === "" && !editIsModalVisible && !userIsModalVisible ? true : false}>
+            Ok
+          </Button>,
+        ]}
       >
-        <Input 
-          onChange={editIsModalVisible ? (e)=> setEditData({id: editData.id, name: e.target.value}) : (e)=> setUser({id: uuidv1(), name: e.target.value})} 
-          value={editIsModalVisible ? editData.name : user.name} 
-        />
+        {
+          userIsModalVisible ? <p>Name: {userModalText}</p> 
+          : 
+          <Input 
+            onChange={editIsModalVisible ? (e)=> setEditData({id: editData.id, name: e.target.value}) : (e)=> setUser({id: uuidv1(), name: e.target.value})} 
+            value={editIsModalVisible ? editData.name : user.name} 
+          />
+        }
       </Modal>
     </div>
   );
