@@ -35,8 +35,9 @@ function App() {
       key: 'action',
       render: (text, record) => (
         <Space size="middle">
+          <Button type="default" onClick={()=> showUserModal(record.name)}>View</Button>
           <Button type="primary" onClick={()=> showEditModal(text, record)}>Edit</Button>
-          <Button type="default" onClick={()=> deleteRecord(text, record)}>Delete</Button>
+          <Button type="primary" danger onClick={()=> deleteRecord(text, record)}>Delete</Button>
         </Space>
       ),
     },
